@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Module that contains function to add two 2D matrices element-wise.
+"""
+
 
 def add_matrices2D(mat1, mat2):
     # Check if number of rows are the same
