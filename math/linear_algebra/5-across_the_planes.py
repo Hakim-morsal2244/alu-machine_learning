@@ -5,15 +5,23 @@ Module that contains function to add two 2D matrices element-wise.
 
 
 def add_matrices2D(mat1, mat2):
-    # Check if number of rows are the same
+    """
+    Add two 2D matrices element-wise.
+
+    Args:
+        mat1 (list of list of int/float): First matrix.
+        mat2 (list of list of int/float): Second matrix.
+
+    Returns:
+        list of list of int/float: New matrix with summed values.
+        None: If matrices are not the same shape.
+    """
     if len(mat1) != len(mat2):
         return None
 
     new_matrix = []
 
-    # Add element-wise
     for i in range(len(mat1)):
-        # Check if number of columns are the same
         if len(mat1[i]) != len(mat2[i]):
             return None
 
