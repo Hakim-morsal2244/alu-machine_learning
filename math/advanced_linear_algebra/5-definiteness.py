@@ -9,40 +9,36 @@ import numpy as np
 
 def definiteness(matrix):
     """
-    Calculates the definiteness of a matrix.
+    Calculates the definiteness of a symmetric matrix.
     Returns one of:
     'Positive definite', 'Positive semi-definite',
     'Negative semi-definite', 'Negative definite', 'Indefinite',
-    or None if not applicable.
+    or None if the matrix is not valid or not symmetric.
     """
     if not isinstance(matrix, np.ndarray):
         raise TypeError("matrix must be a numpy.ndarray")
 
-    # check if matrix is square and non-empty
+    # must be square and non-empty
     if matrix.size == 0 or matrix.shape[0] != matrix.shape[1]:
         return None
 
+    # must be symmetric
+    if not np.allclose(matrix, matrix.T):
+        return None
+
     try:
-        # compute eigenvalues
         eigvals = np.linalg.eigvals(matrix)
     except np.linalg.LinAlgError:
         return None
 
-    pos = np.all(eigvals > 0)
-    pos_semi = np.all(eigvals >= 0) and not pos
-    neg = np.all(eigvals < 0)
-    neg_semi = np.all(eigvals <= 0) and not neg
-    indefinite = not (pos or pos_semi or neg or neg_semi)
-
-    if pos:
+    if np.all(eigvals > 0):
         return "Positive definite"
-    elif pos_semi:
+    elif np.all(eigvals >= 0):
         return "Positive semi-definite"
-    elif neg:
+    elif np.all(eigvals < 0):
         return "Negative definite"
-    elif neg_semi:
+    elif np.all(eigvals <= 0):
         return "Negative semi-definite"
-    elif indefinite:
+    else:
         return "Indefinite"
 
-    return None
