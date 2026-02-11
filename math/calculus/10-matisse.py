@@ -5,7 +5,9 @@
 def poly_derivative(poly):
     """Return the derivative of a polynomial as a list"""
     # Check for invalid input
-    if not isinstance(poly, list) or not all(isinstance(x, (int, float)) for x in poly):
+    if not isinstance(poly, list) or len(poly) == 0:
+        return None
+    if not all(isinstance(x, (int, float)) for x in poly):
         return None
 
     # Constant polynomial → derivative is 0
