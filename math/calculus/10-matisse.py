@@ -3,15 +3,20 @@
 
 
 def poly_derivative(poly):
-    """Return derivative of a polynomial as a list"""
-    if (not isinstance(poly, list)
-            or not all(isinstance(x, (int, float)) for x in poly)):
-        # INVALID INPUT → must return None
+    """Return the derivative of a polynomial as a list"""
+    # Check for invalid input
+    if not isinstance(poly, list) or not all(isinstance(x, (int, float)) for x in poly):
         return None
 
+    # Constant polynomial → derivative is 0
     if len(poly) == 1:
-        # constant polynomial → derivative is 0
         return [0]
 
-    # Compute derivative for valid polynomial
-    return [i * poly[i] for i in range(1, len(poly))]
+    # Compute derivative
+    deriv = [i * poly[i] for i in range(1, len(poly))]
+
+    # If derivative is all zeros, return [0]
+    if all(x == 0 for x in deriv):
+        return [0]
+
+    return deriv
