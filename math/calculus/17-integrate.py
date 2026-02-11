@@ -4,8 +4,8 @@
 
 def poly_integral(poly, C=0):
     """Return the integral of a polynomial as a list"""
-    # Validate input
-    if (not isinstance(poly, list)
+    # Validate poly and C
+    if (not isinstance(poly, list) or len(poly) == 0
             or not all(isinstance(x, (int, float)) for x in poly)
             or not isinstance(C, (int, float))):
         return None
@@ -21,7 +21,7 @@ def poly_integral(poly, C=0):
             val = int(val)
         integral.append(val)
 
-    # Trim trailing zeros
+    # Trim trailing zeros (keep at least one element)
     while len(integral) > 1 and integral[-1] == 0:
         integral.pop()
 
