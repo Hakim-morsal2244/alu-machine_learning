@@ -4,7 +4,10 @@ Module to calculate the intersection of observed data with
 hypothetical probabilities and prior beliefs.
 """
 import numpy as np
-from 0-likelihood import likelihood
+import importlib
+
+# Dynamically import '0-likelihood.py'
+likelihood = importlib.import_module("0-likelihood").likelihood
 
 
 def intersection(x, n, P, Pr):
