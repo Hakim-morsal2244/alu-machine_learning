@@ -6,7 +6,6 @@ given hypothetical probabilities and prior beliefs.
 import numpy as np
 import importlib
 
-# Dynamically import intersection function
 intersection = importlib.import_module("1-intersection").intersection
 
 
@@ -40,7 +39,6 @@ def marginal(x, n, P, Pr):
     ValueError
         If any value in P or Pr is not in [0, 1].
     """
-    # Validation (in order)
     if not isinstance(n, int) or n <= 0:
         raise ValueError("n must be a positive integer")
 
@@ -70,5 +68,5 @@ def marginal(x, n, P, Pr):
         raise ValueError("Pr must sum to 1")
 
     # Marginal probability = sum of intersections
-    I = intersection(x, n, P, Pr)
-    return np.sum(I)
+    intersection_vals = intersection(x, n, P, Pr)
+    return np.sum(intersection_vals)
