@@ -52,3 +52,42 @@ class MultiNormal:
 
         # Compute covariance manually (d x d)
         self.cov = np.dot(X_centered, X_centered.T) / (n - 1)
+
+    def pdf(self, x):
+        """
+        Calculates the PDF of a data point x.
+
+        Parameters
+        ----------
+        x : numpy.ndarray of shape (d, 1)
+            Data point to evaluate.
+
+        Returns
+        -------
+        float
+            The PDF value at x.
+
+        Raises
+        ------
+        TypeError
+            If x is not a numpy.ndarray.
+        ValueError
+            If x does not have shape (d, 1) or covariance is singular.
+        """
+        if not isinstance(x, np.ndarray):
+            raise TypeError("x must be a numpy.ndarray")
+
+        d = self.mean.shape[0]
+        if x.shape != (d, 1):
+            raise ValueError("x must have the shape ({}, 1)".format(d))
+
+        diff = x - self.mean
+        det_cov = np.linalg.det(self.cov)
+        if det_cov == 0:
+            raise ValueError("Covariance matrix is singular")
+
+        inv_cov = np.linalg.inv(self.cov)
+        exponent = -0.5 * np.dot(np.dot(diff.T, inv_cov), diff)
+        pdf_val = (1 / np.sqrt((2 * np.pi)**d * det_cov)) * np.exp(exponent)
+
+        return float(pdf_val)
