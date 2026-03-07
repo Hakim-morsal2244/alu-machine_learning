@@ -12,13 +12,13 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     Parameters
     ----------
     images : numpy.ndarray
-        Numpy array of shape (m, h, w) containing m grayscale images
+        Numpy array of shape (m, h, w) with m grayscale images
     kernel : numpy.ndarray
-        Numpy array of shape (kh, kw) containing the kernel
+        Numpy array of shape (kh, kw) with the convolution kernel
     padding : str or tuple
-        'same', 'valid', or a tuple of (ph, pw) for custom padding
+        'same', 'valid', or tuple (ph, pw) for custom padding
     stride : tuple
-        Tuple of (sh, sw) specifying the stride for height and width
+        Tuple (sh, sw) specifying the stride for height and width
 
     Returns
     -------
@@ -38,7 +38,7 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     else:
         ph, pw = padding
 
-    # Pad images
+    # Pad images with zeros
     padded_images = np.pad(
         images,
         pad_width=((0, 0), (ph, ph), (pw, pw)),
@@ -47,23 +47,28 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     )
 
     # Compute output dimensions
-    padded_h = padded_images.shape[1]
-    padded_w = padded_images.shape[2]
+    padded_h, padded_w = padded_images.shape[1], padded_images.shape[2]
     out_h = (padded_h - kh) // sh + 1
     out_w = (padded_w - kw) // sw + 1
 
     # Initialize output array
     output = np.zeros((m, out_h, out_w))
 
-    # Perform convolution using only two loops
+    # Convolution using two loops
     for i in range(out_h):
         for j in range(out_w):
-            # Slice the region
+            # Select region
             vert_start = i * sh
             vert_end = vert_start + kh
             horiz_start = j * sw
             horiz_end = horiz_start + kw
-            region = padded_images[:, vert_start:vert_end, horiz_start:horiz_end]
-            output[:, i, j] = np.sum(region * kernel, axis=(1, 2))
+            region = padded_images[
+                :, vert_start:vert_end, horiz_start:horiz_end
+            ]
+            # Multiply element-wise and sum
+            output[:, i, j] = np.sum(
+                region * kernel,
+                axis=(1, 2)
+            )
 
     return output
