@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Perform strided convolution on grayscale images."""
 
-
 import numpy as np
 
 
@@ -38,18 +37,20 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     else:
         ph, pw = padding
 
-    # Pad images with zeros
-    padded_images = np.pad(
-        images,
-        pad_width=((0, 0), (ph, ph), (pw, pw)),
-        mode='constant',
-        constant_values=0
-    )
+    # Only pad if needed
+    if ph > 0 or pw > 0:
+        padded_images = np.pad(
+            images,
+            pad_width=((0, 0), (ph, ph), (pw, pw)),
+            mode='constant',
+            constant_values=0
+        )
+    else:
+        padded_images = images
 
     # Compute output dimensions
-    padded_h, padded_w = padded_images.shape[1], padded_images.shape[2]
-    out_h = (padded_h - kh) // sh + 1
-    out_w = (padded_w - kw) // sw + 1
+    out_h = (padded_images.shape[1] - kh) // sh + 1
+    out_w = (padded_images.shape[2] - kw) // sw + 1
 
     # Initialize output array
     output = np.zeros((m, out_h, out_w))
@@ -57,7 +58,6 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     # Convolution using two loops
     for i in range(out_h):
         for j in range(out_w):
-            # Select region
             vert_start = i * sh
             vert_end = vert_start + kh
             horiz_start = j * sw
@@ -65,7 +65,6 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
             region = padded_images[
                 :, vert_start:vert_end, horiz_start:horiz_end
             ]
-            # Multiply element-wise and sum
             output[:, i, j] = np.sum(
                 region * kernel,
                 axis=(1, 2)
