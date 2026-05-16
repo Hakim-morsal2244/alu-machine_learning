@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Module defines a Neuron for binary classification"""
+"""Module defines a neuron for binary classification"""
 
 import numpy as np
 
 
 class Neuron:
-    """Neuron performing binary classification"""
+    """Neuron class for binary classification"""
 
     def __init__(self, nx):
         """Initialize neuron"""
@@ -21,15 +21,15 @@ class Neuron:
 
     @property
     def W(self):
-        """Weights getter"""
+        """Getter for W"""
         return self.__W
 
     @property
     def b(self):
-        """Bias getter"""
+        """Getter for b"""
         return self.__b
 
     @property
     def A(self):
-        """Activation getter"""
+        """Getter for A"""
         return self.__A
