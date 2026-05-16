@@ -1,87 +1,110 @@
 #!/usr/bin/env python3
-"""Deep Neural Network"""
-
+""" This module defines the DeepNeuralNetwork class. """
 import numpy as np
 
 
 class DeepNeuralNetwork:
-    """Deep neural network"""
-
+    """
+    This class defines a deep neural network performing binary classification.
+    """
     def __init__(self, nx, layers):
-
+        """
+        This method initializes the DeepNeuralNetwork class.
+        nx (int): is the number of input features.
+        layers (list): is a list representing the number of nodes in each
+        layer of the network.
+        """
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
         if nx < 1:
             raise ValueError("nx must be a positive integer")
-
-        if (not isinstance(layers, list) or len(layers) == 0):
-            raise TypeError(
-                "layers must be a list of positive integers"
-            )
-
-        if not all(isinstance(x, int) and x > 0 for x in layers):
-            raise TypeError(
-                "layers must be a list of positive integers"
-            )
-
-        self.L = len(layers)
-        self.cache = {}
-        self.weights = {}
-
-        for i in range(self.L):
-            nodes = layers[i]
-
+        if not isinstance(layers, list) or len(layers) == 0:
+            raise TypeError("layers must be a list of positive integers")
+        self.__L = len(layers)
+        self.__cache = {}
+        self.__weights = {}
+        for i in range(self.__L):
+            if not (isinstance(layers[i], int) and layers[i] > 0):
+                raise TypeError("layers must be a list of positive integers")
             if i == 0:
-                self.weights["W1"] = (
-                    np.random.randn(nodes, nx)
-                    * np.sqrt(2 / nx)
-                )
+                self.__weights['W1'] = (np.random.randn(layers[i], nx)
+                                        * np.sqrt(2. / nx))
             else:
-                self.weights["W{}".format(i + 1)] = (
-                    np.random.randn(nodes, layers[i - 1])
-                    * np.sqrt(2 / layers[i - 1])
-                )
+                self.__weights['W' + str(i + 1)] = (np.random.randn(
+                    layers[i], layers[i - 1]) * np.sqrt(2. / layers[i - 1]))
+            self.__weights['b' + str(i + 1)] = np.zeros((layers[i], 1))
 
-            self.weights["b{}".format(i + 1)] = np.zeros((nodes, 1))
+    @property
+    def L(self):
+        """
+        This method returns the number of layers of the deep neural network.
+        """
+        return self.__L
 
-    def sigmoid(self, Z):
-        return 1 / (1 + np.exp(-Z))
+    @property
+    def cache(self):
+        """
+        This method returns the values stored in cache dictionary.
+        """
+        return self.__cache
+
+    @property
+    def weights(self):
+        """
+        This method returns the values stored in the weights dictionary.
+        """
+        return self.__weights
 
     def forward_prop(self, X):
+        """
+        This method calculates the forward propagation of the neural network.
+        X (np.ndarray): is the input data (number X, number examples).
+        """
+        self.__cache['A0'] = X
+        for i in range(self.__L):
+            W = self.__weights['W' + str(i + 1)]
+            b = self.__weights['b' + str(i + 1)]
+            Z = np.matmul(W, self.__cache['A' + str(i)]) + b
+            A = 1 / (1 + np.exp(-Z))
+            self.__cache['A' + str(i + 1)] = A
+        return A, self.__cache
 
-        self.cache["A0"] = X
+    def cost(self, Y, A):
+        """
+        This method calculates the cost of the model using logistic regression.
+        Y (np.ndarray): is the correct labels for the input data.
+        A (np.ndarray): is the predicted labels.
+        """
+        m = Y.shape[1]
+        cost = -np.sum((Y * np.log(A)) + ((1 - Y) * np.log(1.0000001 - A)))
+        return cost / m
 
-        for i in range(1, self.L + 1):
-
-            W = self.weights["W{}".format(i)]
-            b = self.weights["b{}".format(i)]
-
-            Z = np.matmul(W, self.cache["A{}".format(i - 1)]) + b
-            A = self.sigmoid(Z)
-
-            self.cache["A{}".format(i)] = A
-
-        return A, self.cache
+    def evaluate(self, X, Y):
+        """
+        This method evaluates the neural network's predictions.
+        X (np.ndarray): is the input data (number X, number examples).
+        Y (np.ndarray): is the correct labels for the input data.
+        """
+        A, _ = self.forward_prop(X)
+        cost = self.cost(Y, A)
+        A = np.where(A >= 0.5, 1, 0)
+        return A, cost
 
     def gradient_descent(self, Y, cache, alpha=0.05):
-
+        """
+        This method calculates one pass of gradient
+        descent on the neural network.
+        """
         m = Y.shape[1]
-        L = self.L
-
-        A_L = cache["A{}".format(L)]
-        dZ = A_L - Y
-
-        for i in range(L, 0, -1):
-
-            A_prev = cache["A{}".format(i - 1)]
-            W = self.weights["W{}".format(i)]
-
-            dW = np.matmul(dZ, A_prev.T) / m
+        dZ = cache['A' + str(self.__L)] - Y
+        for i in range(self.__L, 0, -1):
+            A = cache['A' + str(i - 1)]
+            dW = np.matmul(dZ, A.T) / m
             db = np.sum(dZ, axis=1, keepdims=True) / m
-
-            self.weights["W{}".format(i)] -= alpha * dW
-            self.weights["b{}".format(i)] -= alpha * db
-
-            if i > 1:
-                A_prev_prev = cache["A{}".format(i - 1)]
-                dZ = np.matmul(W.T, dZ) * (A_prev_prev * (1 - A_prev_prev))
+            W = self.__weights['W' + str(i)]
+            dZ = np.matmul(W.T, dZ) * A * (1 - A)
+            self.__weights['W' + str(i)] = self.__weights['W' + str(i)] - (
+                alpha * dW)
+            self.__weights['b' + str(i)] = self.__weights['b' + str(i)] - (
+                alpha * db)
+        return self.__weights
