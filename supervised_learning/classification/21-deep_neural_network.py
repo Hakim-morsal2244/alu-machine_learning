@@ -8,7 +8,6 @@ class DeepNeuralNetwork:
     """Deep neural network"""
 
     def __init__(self, nx, layers):
-        """Initialize network"""
 
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
@@ -48,11 +47,7 @@ class DeepNeuralNetwork:
     def sigmoid(self, Z):
         return 1 / (1 + np.exp(-Z))
 
-    def sigmoid_derivative(self, A):
-        return A * (1 - A)
-
     def forward_prop(self, X):
-        """Forward propagation"""
 
         self.cache["A0"] = X
 
@@ -69,7 +64,6 @@ class DeepNeuralNetwork:
         return A, self.cache
 
     def gradient_descent(self, Y, cache, alpha=0.05):
-        """Backpropagation"""
 
         m = Y.shape[1]
         L = self.L
@@ -89,4 +83,5 @@ class DeepNeuralNetwork:
             self.weights["b{}".format(i)] -= alpha * db
 
             if i > 1:
-                dZ = np.matmul(W.T, dZ) * self.sigmoid_derivative(A_prev)
+                A_prev_prev = cache["A{}".format(i - 1)]
+                dZ = np.matmul(W.T, dZ) * (A_prev_prev * (1 - A_prev_prev))
