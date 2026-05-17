@@ -113,7 +113,6 @@ class DeepNeuralNetwork:
         X (np.ndarray): is the input data (number X, number examples).
         Y (np.ndarray): is the correct labels for the input data.
         """
-        m = X.shape[1]
         A = self.forward_prop(X)[0]
         return np.where(A == np.max(A, axis=0), 1, 0), self.cost(Y, A)
 
@@ -169,7 +168,7 @@ class DeepNeuralNetwork:
         costs = []
         count = []
         for i in range(iterations + 1):
-            A, cache = self.forward_prop(X)
+            A, _ = self.forward_prop(X)
             if i != iterations:
                 self.gradient_descent(Y, self.cache, alpha)
             cost = self.cost(Y, A)
@@ -197,6 +196,7 @@ class DeepNeuralNetwork:
         with open(filename, 'wb') as f:
             pickle.dump(self, f)
 
+    @staticmethod
     def load(filename):
         """
         This method loads a pickled DeepNeuralNetwork object.
