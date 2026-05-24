@@ -1,26 +1,12 @@
-#!/usr/bin/env python3
-"""
-Module that contains a function that returns two placeholders, x and y
-"""
-
-import tensorflow.compat.v1 as tf
-
-tf.disable_eager_execution()
+import tensorflow as tf  # type: ignore
 
 
 def create_placeholders(nx, classes):
-    """
-    Creates placeholders for input data and labels
-
-    nx: number of input features
+    """Create TF placeholders for input data and one-hot labels.
+    nx: number of features
     classes: number of classes
-
-    Returns:
-        x: input placeholder
-        y: label placeholder
+    Returns: x, y placeholders
     """
-
-    x = tf.placeholder(tf.float32, shape=(None, nx), name='x')
-    y = tf.placeholder(tf.float32, shape=(None, classes), name='y')
-
+    x = tf.compat.v1.placeholder(tf.float32, shape=(None, nx), name='x')
+    y = tf.compat.v1.placeholder(tf.float32, shape=(None, classes), name='y')
     return x, y
