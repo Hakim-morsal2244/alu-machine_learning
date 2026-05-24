@@ -26,7 +26,8 @@ def autoencoder(input_dims, filters, latent_dims):
         )(x)
 
         x = keras.layers.MaxPooling2D(
-            (2, 2)
+            (2, 2),
+            padding='same'
         )(x)
 
     encoder = keras.Model(inputs, x)
@@ -46,9 +47,7 @@ def autoencoder(input_dims, filters, latent_dims):
         activation='relu'
     )(x)
 
-    x = keras.layers.UpSampling2D(
-        (2, 2)
-    )(x)
+    x = keras.layers.UpSampling2D((2, 2))(x)
 
     x = keras.layers.Conv2D(
         rev_filters[1],
@@ -57,9 +56,7 @@ def autoencoder(input_dims, filters, latent_dims):
         activation='relu'
     )(x)
 
-    x = keras.layers.UpSampling2D(
-        (2, 2)
-    )(x)
+    x = keras.layers.UpSampling2D((2, 2))(x)
 
     x = keras.layers.Conv2D(
         rev_filters[2],
@@ -68,9 +65,7 @@ def autoencoder(input_dims, filters, latent_dims):
         activation='relu'
     )(x)
 
-    x = keras.layers.UpSampling2D(
-        (2, 2)
-    )(x)
+    x = keras.layers.UpSampling2D((2, 2))(x)
 
     x = keras.layers.Conv2D(
         input_dims[2],
@@ -84,10 +79,7 @@ def autoencoder(input_dims, filters, latent_dims):
     # ======================
     # AUTOENCODER
     # ======================
-    auto_input = inputs
-    auto_output = decoder(encoder(auto_input))
-
-    auto = keras.Model(auto_input, auto_output)
+    auto = keras.Model(inputs, decoder(encoder(inputs)))
 
     auto.compile(
         optimizer='adam',
