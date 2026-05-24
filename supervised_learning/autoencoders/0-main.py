@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Autoencoder example using MNIST and Keras."""
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np  # type: ignore
@@ -19,7 +20,14 @@ if hasattr(tf, "random") and hasattr(tf.random, "set_seed"):
 else:
     tf.set_random_seed(0)
 encoder, decoder, auto = autoencoder(784, [128, 64], 32)
-auto.fit(x_train, x_train, epochs=50, batch_size=256, shuffle=True, validation_data=(x_test, x_test))
+auto.fit(
+    x_train,
+    x_train,
+    epochs=50,
+    batch_size=256,
+    shuffle=True,
+    validation_data=(x_test, x_test),
+)
 encoded = encoder.predict(x_test[:10])
 print(np.mean(encoded))
 reconstructed = decoder.predict(encoded)
