@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+"""Module to test create_placeholders and create_layer functions."""
+
 try:
 	import tensorflow as tf
-except Exception:
-	# Fallback stub so the script can run without TensorFlow installed (useful for linting)
+except ImportError:
+	# Fallback stub so the script can run without TensorFlow installed
+	# (useful for linting)
 	import types
 	tf = types.SimpleNamespace(nn=types.SimpleNamespace(tanh=lambda x: x))
 
