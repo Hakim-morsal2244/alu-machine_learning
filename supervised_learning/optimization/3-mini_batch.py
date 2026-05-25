@@ -25,39 +25,56 @@ def train_mini_batch(X_train, Y_train, X_valid, Y_valid,
 
         for epoch in range(epochs + 1):
 
-            train_cost = sess.run(loss, feed_dict={x: X_train, y: Y_train})
-            train_accuracy = sess.run(accuracy, feed_dict={x: X_train, y: Y_train})
+            train_cost = sess.run(
+                loss, feed_dict={x: X_train, y: Y_train}
+            )
+            train_acc = sess.run(
+                accuracy, feed_dict={x: X_train, y: Y_train}
+            )
 
-            valid_cost = sess.run(loss, feed_dict={x: X_valid, y: Y_valid})
-            valid_accuracy = sess.run(accuracy, feed_dict={x: X_valid, y: Y_valid})
+            valid_cost = sess.run(
+                loss, feed_dict={x: X_valid, y: Y_valid}
+            )
+            valid_acc = sess.run(
+                accuracy, feed_dict={x: X_valid, y: Y_valid}
+            )
 
             print("After {} epochs:".format(epoch))
             print("\tTraining Cost: {}".format(train_cost))
-            print("\tTraining Accuracy: {}".format(train_accuracy))
+            print("\tTraining Accuracy: {}".format(train_acc))
             print("\tValidation Cost: {}".format(valid_cost))
-            print("\tValidation Accuracy: {}".format(valid_accuracy))
+            print("\tValidation Accuracy: {}".format(valid_acc))
 
             if epoch == epochs:
                 break
 
             X_shuffled, Y_shuffled = shuffle_data(X_train, Y_train)
 
-            step = 0  # IMPORTANT: reset each epoch
+            step = 0
 
             for i in range(0, m, batch_size):
                 X_batch = X_shuffled[i:i + batch_size]
                 Y_batch = Y_shuffled[i:i + batch_size]
 
-                sess.run(train_op, feed_dict={x: X_batch, y: Y_batch})
+                sess.run(
+                    train_op,
+                    feed_dict={x: X_batch, y: Y_batch}
+                )
 
                 step += 1
 
                 if step % 100 == 0:
-                    step_cost = sess.run(loss, feed_dict={x: X_batch, y: Y_batch})
-                    step_accuracy = sess.run(accuracy, feed_dict={x: X_batch, y: Y_batch})
+                    step_cost = sess.run(
+                        loss,
+                        feed_dict={x: X_batch, y: Y_batch}
+                    )
+                    step_acc = sess.run(
+                        accuracy,
+                        feed_dict={x: X_batch, y: Y_batch}
+                    )
 
                     print("\tStep {}:".format(step))
                     print("\t\tCost: {}".format(step_cost))
-                    print("\t\tAccuracy: {}".format(step_accuracy))
+                    print("\t\tAccuracy: {}".format(step_acc))
 
         return saver.save(sess, save_path)
