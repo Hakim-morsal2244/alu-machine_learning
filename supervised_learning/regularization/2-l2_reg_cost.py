@@ -6,12 +6,12 @@ import tensorflow as tf
 
 def l2_reg_cost(cost):
     """
-    Calculates the cost of a neural network with L2 regularization
+    Calculates cost including L2 regularization term per layer
 
-    cost: tensor containing the base cost (without regularization)
+    cost: tensor (base cost)
 
     Returns:
-        tensor containing cost including L2 regularization
+        tensor: cost + L2 regularization term
     """
-    l2_cost = tf.losses.get_regularization_loss()
-    return cost + l2_cost
+    l2_costs = tf.losses.get_regularization_losses()
+    return cost + l2_costs
