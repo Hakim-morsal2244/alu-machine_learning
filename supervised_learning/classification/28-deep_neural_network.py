@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
-"""Deep Neural Network with sigmoid/tanh activation"""
-
+"""Deep Neural Network"""
 import numpy as np
 import pickle
 
 
 class DeepNeuralNetwork:
-    """Deep Neural Network for binary classification"""
+    """defines a deep neural network"""
 
     def __init__(self, nx, layers, activation='sig'):
+        """class constructor"""
+
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
+
         if nx < 1:
             raise ValueError("nx must be a positive integer")
-        if not isinstance(layers, list) or len(layers) == 0:
-            raise TypeError("layers must be a list of positive integers")
+
+        if (not isinstance(layers, list) or
+                len(layers) == 0):
+            raise TypeError(
+                "layers must be a list of positive integers"
+            )
+
         if activation not in ['sig', 'tanh']:
-            raise ValueError("activation must be 'sig' or 'tanh'")
+            raise ValueError(
+                "activation must be 'sig' or 'tanh'"
+            )
 
         self.__L = len(layers)
         self.__cache = {}
@@ -24,122 +33,188 @@ class DeepNeuralNetwork:
         self.__activation = activation
 
         for i in range(self.__L):
-            prev = nx if i == 0 else layers[i - 1]
+
+            if (not isinstance(layers[i], int)
+                    or layers[i] <= 0):
+                raise TypeError(
+                    "layers must be a list of positive integers"
+                )
+
+            if i == 0:
+                prev = nx
+            else:
+                prev = layers[i - 1]
 
             self.__weights["W{}".format(i + 1)] = (
-                np.random.randn(layers[i], prev) * np.sqrt(2 / prev)
+                np.random.randn(layers[i], prev)
+                * np.sqrt(2 / prev)
             )
-            self.__weights["b{}".format(i + 1)] = np.zeros((layers[i], 1))
 
-    # ---------------- Properties ----------------
+            self.__weights["b{}".format(i + 1)] = np.zeros(
+                (layers[i], 1)
+            )
+
     @property
     def L(self):
+        """getter"""
         return self.__L
 
     @property
     def cache(self):
+        """getter"""
         return self.__cache
 
     @property
     def weights(self):
+        """getter"""
         return self.__weights
 
     @property
     def activation(self):
+        """getter"""
         return self.__activation
 
-    # ---------------- Forward Prop ----------------
     def forward_prop(self, X):
+        """forward propagation"""
+
         self.__cache["A0"] = X
 
-        for i in range(1, self.__L + 1):
-            W = self.__weights["W{}".format(i)]
-            b = self.__weights["b{}".format(i)]
+        for i in range(self.__L):
 
-            Z = W @ self.__cache["A{}".format(i - 1)] + b
+            W = self.__weights["W{}".format(i + 1)]
+            b = self.__weights["b{}".format(i + 1)]
 
-            if self.__activation == "sig":
-                A = 1 / (1 + np.exp(-Z))
+            Z = np.matmul(
+                W,
+                self.__cache["A{}".format(i)]
+            ) + b
+
+            if i != self.__L - 1:
+
+                if self.__activation == 'sig':
+                    A = 1 / (1 + np.exp(-Z))
+                else:
+                    A = np.tanh(Z)
+
             else:
-                A = np.tanh(Z)
+                A = 1 / (1 + np.exp(-Z))
 
-            self.__cache["A{}".format(i)] = A
+            self.__cache["A{}".format(i + 1)] = A
 
         return A, self.__cache
 
-    # ---------------- Cost ----------------
     def cost(self, Y, A):
+        """cost function"""
+
         m = Y.shape[1]
-        A = np.clip(A, 1e-8, 1 - 1e-8)
-        return -np.sum(
-            Y * np.log(A) + (1 - Y) * np.log(1 - A)
+
+        cost = -np.sum(
+            Y * np.log(A) +
+            (1 - Y) * np.log(1.0000001 - A)
         ) / m
 
-    # ---------------- Evaluate ----------------
+        return cost
+
     def evaluate(self, X, Y):
+        """evaluate"""
+
         A, _ = self.forward_prop(X)
-        pred = np.where(A >= 0.5, 1, 0)
-        return pred, self.cost(Y, A)
 
-    # ---------------- Gradient Descent ----------------
+        prediction = np.where(A >= 0.5, 1, 0)
+
+        return prediction, self.cost(Y, A)
+
     def gradient_descent(self, Y, cache, alpha=0.05):
+        """gradient descent"""
+
         m = Y.shape[1]
-        L = self.__L
 
-        dZ = cache["A{}".format(L)] - Y
+        weights_copy = self.__weights.copy()
 
-        for i in reversed(range(1, L + 1)):
-            A_prev = cache["A{}".format(i - 1)]
-            W = self.__weights["W{}".format(i)]
+        dZ = cache["A{}".format(self.__L)] - Y
 
-            dW = (1 / m) * (dZ @ A_prev.T)
-            db = (1 / m) * np.sum(dZ, axis=1, keepdims=True)
+        for i in reversed(range(self.__L)):
 
-            if i > 1:
-                if self.__activation == "sig":
-                    dZ = (W.T @ dZ) * (A_prev * (1 - A_prev))
+            A_prev = cache["A{}".format(i)]
+
+            W = weights_copy["W{}".format(i + 1)]
+
+            dW = np.matmul(dZ, A_prev.T) / m
+
+            db = np.sum(
+                dZ,
+                axis=1,
+                keepdims=True
+            ) / m
+
+            self.__weights["W{}".format(i + 1)] = (
+                self.__weights["W{}".format(i + 1)]
+                - alpha * dW
+            )
+
+            self.__weights["b{}".format(i + 1)] = (
+                self.__weights["b{}".format(i + 1)]
+                - alpha * db
+            )
+
+            if i != 0:
+
+                if self.__activation == 'sig':
+                    dZ = np.matmul(
+                        W.T,
+                        dZ
+                    ) * (
+                        A_prev * (1 - A_prev)
+                    )
+
                 else:
-                    dZ = (W.T @ dZ) * (1 - A_prev ** 2)
+                    dZ = np.matmul(
+                        W.T,
+                        dZ
+                    ) * (
+                        1 - (A_prev ** 2)
+                    )
 
-            self.__weights["W{}".format(i)] -= alpha * dW
-            self.__weights["b{}".format(i)] -= alpha * db
-
-        return self.__weights
-
-    # ---------------- Train ----------------
-    def train(self, X, Y, iterations=5000, alpha=0.05,
-              verbose=True, graph=False, step=100):
+    def train(self, X, Y, iterations=5000,
+              alpha=0.05, verbose=True,
+              graph=True, step=100):
+        """train network"""
 
         if not isinstance(iterations, int):
-            raise TypeError("iterations must be an integer")
+            raise TypeError(
+                "iterations must be an integer"
+            )
+
         if iterations <= 0:
-            raise ValueError("iterations must be a positive integer")
-        if not isinstance(alpha, (int, float)):
-            raise TypeError("alpha must be a float")
+            raise ValueError(
+                "iterations must be a positive integer"
+            )
+
+        if not isinstance(alpha, float):
+            raise TypeError(
+                "alpha must be a float"
+            )
+
         if alpha <= 0:
-            raise ValueError("alpha must be positive")
+            raise ValueError(
+                "alpha must be positive"
+            )
 
-        if verbose or graph:
-            if not isinstance(step, int):
-                raise TypeError("step must be an integer")
-            if step <= 0 or step > iterations:
-                raise ValueError("step must be positive and <= iterations")
+        for i in range(iterations):
 
-        for i in range(iterations + 1):
-            A, _ = self.forward_prop(X)
+            A, cache = self.forward_prop(X)
 
-            if i != iterations:
-                self.gradient_descent(Y, self.cache, alpha)
-
-            if verbose and (i % step == 0 or i == iterations):
-                print("Cost after {} iterations: {}".format(
-                    i, self.cost(Y, A)
-                ))
+            self.gradient_descent(
+                Y,
+                cache,
+                alpha
+            )
 
         return self.evaluate(X, Y)
 
-    # ---------------- Save / Load ----------------
     def save(self, filename):
+        """save object"""
+
         if not filename.endswith(".pkl"):
             filename += ".pkl"
 
@@ -148,8 +223,11 @@ class DeepNeuralNetwork:
 
     @staticmethod
     def load(filename):
+        """load object"""
+
         try:
             with open(filename, "rb") as f:
                 return pickle.load(f)
+
         except FileNotFoundError:
             return None
