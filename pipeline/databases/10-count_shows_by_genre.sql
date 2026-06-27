@@ -1,10 +1,9 @@
--- this script lists all shows contained in hbtn_0d_tvshows that have at least one genre linked.
--- Each record display: tv_shows.title - tv_show_genres.genre_id
--- Results is sorted in ascending order by tv_shows.title and tv_show_genres.genre_id
--- Only one SELECT statement can be used
-
-SELECT tv_shows.title, tv_show_genres.genre_id
-FROM tv_shows
+-- Lists all genres and the number of shows linked to each genre
+SELECT
+    tv_genres.name AS genre,
+    COUNT(tv_show_genres.show_id) AS number_of_shows
+FROM tv_genres
 INNER JOIN tv_show_genres
-ON tv_shows.id = tv_show_genres.show_id
-ORDER BY tv_shows.title, tv_show_genres.genre_id;
+ON tv_genres.id = tv_show_genres.genre_id
+GROUP BY tv_genres.id, tv_genres.name
+ORDER BY number_of_shows DESC;
