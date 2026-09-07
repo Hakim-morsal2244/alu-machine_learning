@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Performs neural style transfer using a pretrained VGG19 model."""
 
 import numpy as np
 import tensorflow as tf
@@ -63,6 +64,7 @@ class NST:
             (new_height, new_width),
             method=tf.image.ResizeMethod.BICUBIC
         )
+        image = tf.clip_by_value(image, 0.0, 255.0)
         image = image / 255.0
 
         return image
